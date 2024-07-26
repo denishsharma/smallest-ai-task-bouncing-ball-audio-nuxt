@@ -7,12 +7,7 @@ export default withNuxt(
     antfu({
         formatters: true,
         vue: true,
-        unocss: {
-            strict: true,
-            overrides: {
-                "unocss/enforce-class-compile": "warn",
-            },
-        },
+        unocss: true,
         stylistic: {
             indent: 4,
             semi: true,
@@ -54,6 +49,8 @@ export default withNuxt(
 
             "no-console": ["warn", { allow: ["warn", "error"] }],
             "no-debugger": "warn",
+
+            "unocss/enforce-class-compile": "warn",
 
             "vue/max-attributes-per-line": [
                 "error",
