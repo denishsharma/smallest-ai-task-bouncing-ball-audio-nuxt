@@ -1,0 +1,11 @@
+:root {
+    font-family: "Inter", sans-serif;
+    text-rendering: geometricPrecision;
+    -webkit-font-smoothing: subpixel-antialiased;
+    -moz-osx-font-smoothing: auto;
+    -webkit-text-size-adjust: 100%;
+}
+
+html {
+    @apply text-16px scroll-smooth;
+}

@@ -1,0 +1,17 @@
+{
+    "recommendations": [
+        "mikestead.dotenv",
+        "editorconfig.editorconfig",
+        "dbaeumer.vscode-eslint",
+        "antfu.goto-alias",
+        "antfu.iconify",
+        "nuxtr.nuxtr-vscode",
+        "antfu.unocss",
+        "vue.volar",
+        "nuxt.mdc",
+        "vivaxy.vscode-conventional-commits"
+    ],
+    "unwantedRecommendations": [
+        "esbenp.prettier-vscode"
+    ]
+}

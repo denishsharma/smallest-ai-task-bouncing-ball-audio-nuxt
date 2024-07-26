@@ -1,0 +1,13 @@
+# Handle line endings automatically for files detected as text
+# and leave all files detected as binary untouched.
+*               text=auto
+
+# The above will handle all files NOT found below
+# (i.e. all files that are detected as binary)
+*.gitattributes text
+.gitignore      text
+*.md text       text diff=markdown
+
+# Enable syntax highlighting for files with the ".gitattributes" extension
+*.gitattributes linguist-language=gitattributes
+*.gitignore     linguist-detectable=true
