@@ -20,6 +20,8 @@ export const BOUNCE_THRESHOLD = 0.5;
 export const WALL_AND_FLOOR_THICKNESS = 20;
 export const WALL_PROPERTIES: Matter.IChamferableBodyDefinition = {
     isStatic: true,
+    friction: 0,
+    frictionStatic: 0,
     restitution: 1,
 };
 

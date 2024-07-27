@@ -5,17 +5,29 @@ definePageMeta({
     layout: "app",
 });
 
+const { $socket } = useNuxtApp();
+
 const eventSceneAddRandomBall = useEventBus<SceneAddBallEventPayload>(SCENE_ADD_RANDOM_BALL);
 const eventSceneBallHitFloor = useEventBus<SceneBallHitFloorEventPayload>(SCENE_BALL_HIT_FLOOR);
 
 const { space } = useMagicKeys();
 
+const applicationStore = useApplicationStore();
+
 whenever(space, () => {
     eventSceneAddRandomBall.emit({});
 });
 
-eventSceneBallHitFloor.on((data) => {
+eventSceneBallHitFloor.on(async (data) => {
     console.log(data);
+
+    if (data.floor === null) {
+        $socket.emit("ball-hit-floor-end", data);
+        return;
+    }
+
+    const audio = await applicationStore.getAudioOfWord(data.floor.word.id);
+    $socket.emit("ball-hit-floor", { ...data, audio });
 });
 </script>
 

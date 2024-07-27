@@ -5,16 +5,8 @@ import { ulid } from "ulidx";
 import { ARENA_HEIGHT, ARENA_WIDTH, BALL_LABEL_REGEX, BALL_PROPERTIES, BALL_RADIUS, BOUNCE_THRESHOLD, FLOOR_LABEL_REGEX, SPEED_THRESHOLD, THROW_ANGLE, THROW_MAGNITUDE, WALL_AND_FLOOR_THICKNESS, WALL_PROPERTIES } from "~/features/arena/constants/arena";
 import { SCENE_ADD_RANDOM_BALL, SCENE_BALL_HIT_FLOOR, type SceneAddBallEventPayload, type SceneBallHitFloorEventPayload } from "~/features/arena/constants/events";
 
-const props = withDefaults(defineProps<{
-    phrase?: string;
-}>(), {
-    phrase: "I am an amazing frontend developer at night",
-});
-
-const phraseWords = computed(() => props.phrase.split(" ").map(word => ({
-    id: ulid(),
-    word: word.trim(),
-})));
+const applicationStore = useApplicationStore();
+const { words } = storeToRefs(applicationStore);
 
 const eventSceneAddRandomBall = useEventBus<SceneAddBallEventPayload>(SCENE_ADD_RANDOM_BALL);
 const eventSceneBallHitFloor = useEventBus<SceneBallHitFloorEventPayload>(SCENE_BALL_HIT_FLOOR);
@@ -25,10 +17,10 @@ const engine = Engine.create();
 const world = engine.world;
 
 function getWalls() {
-    const FLOOR_SEGMENT_WIDTH = ARENA_WIDTH / phraseWords.value.length;
+    const FLOOR_SEGMENT_WIDTH = ARENA_WIDTH / words.value.length;
 
     const floorSegments: Body[] = [];
-    phraseWords.value.forEach(({ word }, index) => {
+    words.value.forEach(({ id, word }, index) => {
         const segment = Bodies.rectangle(
             FLOOR_SEGMENT_WIDTH * index + FLOOR_SEGMENT_WIDTH / 2,
             ARENA_HEIGHT,
@@ -37,7 +29,8 @@ function getWalls() {
             {
                 isStatic: true,
                 friction: 0.5,
-                label: `floor-segment-${ulid()}-${word}`,
+                restitution: 0.8,
+                label: `floor-segment-${id}-${word}`,
             },
         );
 
@@ -79,6 +72,13 @@ eventSceneAddRandomBall.on((data) => {
 
         if (velocity < SPEED_THRESHOLD && !isBouncing) {
             Composite.remove(world, ball);
+            const ballMatch = ball.label.match(BALL_LABEL_REGEX);
+            if (ballMatch) {
+                eventSceneBallHitFloor.emit({
+                    ball: ballMatch.groups!.id,
+                    floor: null,
+                });
+            }
             Events.off(engine, "afterUpdate", checkBallAtRest);
         }
     };
@@ -126,7 +126,7 @@ onMounted(async () => {
                         ball: ballMatch.groups!.id,
                         floor: {
                             id: floorMatch.groups!.id,
-                            word: floorMatch.groups!.word,
+                            word: applicationStore.getWordData(floorMatch.groups!.id),
                         },
                     });
                 }
@@ -159,10 +159,10 @@ onMounted(async () => {
                     <canvas ref="arena" class=":uno: relative" />
                 </div>
 
-                <div :style="{ gridTemplateColumns: `repeat(${phraseWords.length}, 1fr)` }" class=":uno: grid select-none px-10px">
-                    <template v-for="{ word, id: _id } in phraseWords" :key="_id">
-                        <div class=":uno: h-8 flex items-center justify-center text-10px text-gray-500 font-semibold">
-                            <div class=":uno: rounded-md bg-dark-200 px-1.5 pb-1.2 pt-1.5 leading-none uppercase">
+                <div :style="{ gridTemplateColumns: `repeat(${words.length}, 1fr)` }" class=":uno: grid select-none px-10px">
+                    <template v-for="{ word, id: _id, status } in words" :key="_id">
+                        <div :class="{ ':uno: animate-pulse-alt': status === 'fetching' }" class=":uno: h-8 flex items-center justify-center font-semibold">
+                            <div :class="{ ':uno: bg-dark-200 scale-90 text-gray-500': status === 'idle', ':uno: bg-teal-900 text-gray-300 scale-100': status === 'available' }" class=":uno: rounded-md px-1.5 pb-1.2 pt-1.5 text-10px leading-none uppercase transition">
                                 {{ word }}
                             </div>
                         </div>
