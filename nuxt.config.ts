@@ -2,6 +2,7 @@ import { isDevelopment } from "std-env";
 
 export default defineNuxtConfig({
     devtools: { enabled: true },
+    compatibilityDate: "2024-07-27",
     app: {
         rootId: "__app",
         head: {
