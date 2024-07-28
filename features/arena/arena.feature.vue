@@ -1,15 +1,20 @@
 <script lang="ts" setup>
+import chroma from "chroma-js";
 import { Bodies, Body, Composite, Engine, Events, Render, Runner } from "matter-js";
+import prettyBytes from "pretty-bytes";
 import { ulid } from "ulidx";
 
+import { HOVER_ON_WORD, type HoverOnWordEventPayload, SCENE_ADD_RANDOM_BALL, SCENE_BALL_HIT_FLOOR, type SceneAddBallEventPayload, type SceneBallHitFloorEventPayload } from "~/constants/events";
 import { ARENA_HEIGHT, ARENA_WIDTH, BALL_LABEL_REGEX, BALL_PROPERTIES, BALL_RADIUS, BOUNCE_THRESHOLD, FLOOR_LABEL_REGEX, SPEED_THRESHOLD, THROW_ANGLE, THROW_MAGNITUDE, WALL_AND_FLOOR_THICKNESS, WALL_PROPERTIES } from "~/features/arena/constants/arena";
-import { SCENE_ADD_RANDOM_BALL, SCENE_BALL_HIT_FLOOR, type SceneAddBallEventPayload, type SceneBallHitFloorEventPayload } from "~/features/arena/constants/events";
 
 const applicationStore = useApplicationStore();
-const { words } = storeToRefs(applicationStore);
+const { words, hasAudioFetchedForAllWords } = storeToRefs(applicationStore);
 
 const eventSceneAddRandomBall = useEventBus<SceneAddBallEventPayload>(SCENE_ADD_RANDOM_BALL);
 const eventSceneBallHitFloor = useEventBus<SceneBallHitFloorEventPayload>(SCENE_BALL_HIT_FLOOR);
+const eventHoverOnWord = useEventBus<HoverOnWordEventPayload>(HOVER_ON_WORD);
+
+const { isSupported, memory } = useMemory();
 
 const arena = ref<HTMLCanvasElement | undefined>(undefined);
 
@@ -20,7 +25,7 @@ function getWalls() {
     const FLOOR_SEGMENT_WIDTH = ARENA_WIDTH / words.value.length;
 
     const floorSegments: Body[] = [];
-    words.value.forEach(({ id, word }, index) => {
+    words.value.forEach(({ id, word, color }, index) => {
         const segment = Bodies.rectangle(
             FLOOR_SEGMENT_WIDTH * index + FLOOR_SEGMENT_WIDTH / 2,
             ARENA_HEIGHT,
@@ -31,8 +36,18 @@ function getWalls() {
                 friction: 0.5,
                 restitution: 0.8,
                 label: `floor-segment-${id}-${word}`,
+                render: {
+                    fillStyle: chroma(color).alpha(0.2).hex(),
+                    strokeStyle: color,
+                    lineWidth: 1,
+                },
             },
         );
+        eventHoverOnWord.on(({ word: hoverWord, hover }) => {
+            if (id === hoverWord.id) {
+                segment.render.fillStyle = chroma(color).alpha(hover ? 1 : 0.2).hex();
+            }
+        });
 
         floorSegments.push(segment);
     });
@@ -137,7 +152,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class=":uno: relative flex flex-col overflow-clip border border-dark-300 rounded-xl bg-dark-800 shadow-md">
+    <div class=":uno: relative flex flex-col overflow-clip border border-dark-300 rounded-xl bg-dark-600 shadow-md">
         <ClientOnly>
             <template #fallback>
                 <div class=":uno: min-h-480px min-w-854px flex flex-col items-center justify-center">
@@ -151,15 +166,38 @@ onMounted(async () => {
             </template>
 
             <template #default>
-                <div class=":uno: relative size-full overflow-clip border-b border-dark-300 rounded-b-xl bg-dark-900 shadow-sm">
+                <div class=":uno: relative overflow-clip border-b border-dark-300 bg-dark-900 shadow-sm">
                     <div class=":uno: [--x-dot-color:red] absolute inset-0">
                         <div class=":uno: bg-pattern [mask-image:radial-gradient(ellipse_at_center,black_10%,transparent)] size-full op-60" />
                     </div>
 
                     <canvas ref="arena" class=":uno: relative" />
+
+                    <Transition mode="out-in" name="fade">
+                        <div v-if="!hasAudioFetchedForAllWords" class=":uno: absolute inset-0 flex flex-col select-none items-center justify-center bg-dark-200/10 backdrop-blur-xl">
+                            <Icon name="i-svg-spinners:3-dots-fade" />
+                            <div class=":uno: mt-1 text-sm text-gray-500">
+                                Setting up the environment...
+                            </div>
+                        </div>
+                    </Transition>
                 </div>
 
-                <div :style="{ gridTemplateColumns: `repeat(${words.length}, 1fr)` }" class=":uno: grid select-none px-10px">
+                <div class=":uno: h-8 flex items-center justify-between gap-x-4 px-10px text-xs text-gray-500">
+                    <div>
+                        Bounce threshold: {{ BOUNCE_THRESHOLD }} | Speed threshold: {{ SPEED_THRESHOLD }}
+                    </div>
+
+                    <div>
+                        <div v-if="isSupported && memory" class=":uno: flex gap-x-2">
+                            <div class=":uno: leading-none">
+                                <span>Page Memory:</span> {{ prettyBytes(memory.usedJSHeapSize) }} / {{ prettyBytes(memory.totalJSHeapSize) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="false" :style="{ gridTemplateColumns: `repeat(${words.length}, 1fr)` }" class=":uno: grid select-none px-10px">
                     <template v-for="{ word, id: _id, status } in words" :key="_id">
                         <div :class="{ ':uno: animate-pulse-alt': status === 'fetching' }" class=":uno: h-8 flex items-center justify-center font-semibold">
                             <div :class="{ ':uno: bg-dark-200 scale-90 text-gray-500': status === 'idle', ':uno: bg-teal-900 text-gray-300 scale-100': status === 'available' }" class=":uno: rounded-md px-1.5 pb-1.2 pt-1.5 text-10px leading-none uppercase transition">
@@ -176,5 +214,15 @@ onMounted(async () => {
 <style lang="scss" scoped>
 .bg-pattern {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='16' height='16' fill='none'%3E%3Ccircle fill='rgb(80,80,80)' id='pattern-circle' cx='10' cy='10' r='1.6257413380501518'%3E%3C/circle%3E%3C/svg%3E");
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
 }
 </style>

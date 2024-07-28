@@ -11,3 +11,10 @@ export interface SceneBallHitFloorEventPayload {
 }
 
 export const SCENE_BALL_HIT_FLOOR: EventBusKey<SceneAddBallEventPayload> = Symbol("scene-ball-hit-floor");
+
+export interface HoverOnWordEventPayload {
+    hover: boolean;
+    word: WordData;
+}
+
+export const HOVER_ON_WORD: EventBusKey<HoverOnWordEventPayload> = Symbol("hover-on-word");

@@ -55,6 +55,8 @@
         "@nuxtjs/seo": "2.0.0-rc.16",
         "@pinia-plugin-persistedstate/nuxt": "^1.2.1",
         "@pinia/nuxt": "^0.5.1",
+        "@types/chroma-js": "^2.4.4",
+        "@types/color-hash": "^2.0.0",
         "@types/matter-js": "^0.19.7",
         "@types/node": "^20.14.12",
         "@unocss/eslint-plugin": "^0.61.5",
@@ -64,6 +66,8 @@
         "@vueuse/math": "^11.0.0-beta.2",
         "@vueuse/nuxt": "^11.0.0-beta.2",
         "@vueuse/sound": "^2.0.1",
+        "chroma-js": "^2.4.2",
+        "color-hash": "^2.0.2",
         "destr": "^2.0.3",
         "eslint": "^8.57.0",
         "eslint-plugin-command": "^0.2.3",
@@ -79,6 +83,7 @@
         "overlayscrollbars": "^2.9.2",
         "overlayscrollbars-vue": "^0.5.9",
         "pinia": "^2.1.7",
+        "pretty-bytes": "^6.1.1",
         "radash": "^12.1.0",
         "sass": "^1.77.8",
         "socket.io-client": "^4.7.5",
@@ -90,6 +95,7 @@
         "unocss-preset-useful": "^0.4.2",
         "vite": "^5.3.5",
         "vue-tsc": "^2.0.29",
+        "wavesurfer.js": "^7.8.2",
         "zod": "^3.23.8"
     },
     "resolutions": {

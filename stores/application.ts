@@ -1,64 +1,60 @@
+import ColorHash from "color-hash";
 import { hash } from "ohash";
 
 import type { WordData } from "~/types/application";
 
+const colorHash = new ColorHash();
+
 export const useApplicationStore = defineStore("app", () => {
-    const phrase = ref<string>("Convert Base64 to Audio online using a free decoder tool which allows you to decode Base64 as sound file and play it directly in the browser");
+    const phrase = ref<string>("I am an amazing frontend developer at night");
 
     const fetchQueue = ref<string[]>([]);
+    const isFetching = ref<boolean>(false);
     const audios = ref<Record<string, string>>({});
 
     const words = computed<WordData[]>(() => {
         return phrase.value.split(" ").map((word, index) => {
-            const _hash = hash(word);
+            const _hash = hash(word.trim());
             return {
                 id: hash(`${_hash}-${index}`),
                 word: word.trim(),
                 hash: _hash,
+                color: colorHash.hex(_hash),
                 status: fetchQueue.value.includes(_hash) ? "fetching" : audios.value[_hash] ? "available" : "idle",
             };
         });
     });
 
+    const hasAudioFetchedForAllWords = computed(() => {
+        return words.value.every(word => word.status === "available");
+    });
+
+    watchArray(words, async () => {
+        if (isFetching.value) return;
+        isFetching.value = true;
+
+        for (const word of words.value) {
+            if (audios.value[word.hash] || fetchQueue.value.includes(word.hash)) continue;
+
+            fetchQueue.value.push(word.hash);
+            audios.value[word.hash] = await useFetchWordAudio(word.word);
+            fetchQueue.value = fetchQueue.value.filter(hash => hash !== word.hash);
+        }
+
+        isFetching.value = false;
+    }, { immediate: true });
+
     function getWordData(id: string): WordData {
         const word = words.value.find(word => word.id === id);
         if (!word) throw new Error("Word not found");
-
         return word;
-    }
-
-    async function getAudioOfWord(id: string) {
-        const word = getWordData(id);
-
-        const _hash = word.hash;
-        if (audios.value[_hash]) { return audios.value[_hash]; }
-
-        if (fetchQueue.value.includes(_hash)) {
-            return await new Promise<string>((resolve) => {
-                const unwatch = watch(audios, (value) => {
-                    if (value[_hash]) {
-                        resolve(value[_hash]);
-                        fetchQueue.value.splice(fetchQueue.value.indexOf(_hash), 1);
-                        unwatch();
-                    }
-                });
-            });
-        }
-
-        fetchQueue.value.push(_hash);
-
-        const audio = await useFetchWordAudio(word.word);
-        audios.value[_hash] = audio;
-        fetchQueue.value.splice(fetchQueue.value.indexOf(_hash), 1);
-
-        return audio;
     }
 
     return {
         phrase,
         words,
         audios,
-        getAudioOfWord,
+        hasAudioFetchedForAllWords,
         getWordData,
     };
 });
