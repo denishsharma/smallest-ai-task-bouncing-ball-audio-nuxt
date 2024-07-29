@@ -16,6 +16,17 @@ const isEnvironmentReady = computed(() => {
 const isSceneIdle = computed(() => sceneBalls.value.length === 0);
 
 const localPhrase = ref(phrase.value);
+
+const canPhraseBeSet = computed(() => {
+    const trimmedPhrase = localPhrase.value.trim();
+    return trimmedPhrase !== "";
+});
+
+function setPhrase() {
+    if (!canPhraseBeSet.value) { return; }
+    localPhrase.value = localPhrase.value.trim();
+    phrase.value = localPhrase.value;
+}
 </script>
 
 <template>
@@ -34,13 +45,13 @@ const localPhrase = ref(phrase.value);
                                 :disabled="!isEnvironmentReady || !isSceneIdle || isClearingScene"
                                 class=":uno: h-8 flex grow border border-dark-300 rounded-lg bg-dark-400 px-3 py-2 text-sm text-gray-300 font-medium outline-none transition disabled:(pointer-events-none op-40) focus:(border-teal-900 bg-dark-600 shadow-md shadow-inset ring-1 ring-teal-900/50) hover:(border-dark-200 bg-dark-300)"
                                 placeholder="Enter a phrase"
-                                @keydown.enter.prevent="phrase = localPhrase"
+                                @keydown.enter.prevent="setPhrase"
                             >
 
                             <button
-                                :disabled="!isEnvironmentReady || !isSceneIdle || isClearingScene"
+                                :disabled="!isEnvironmentReady || !isSceneIdle || isClearingScene || !canPhraseBeSet"
                                 class=":uno: ml-2 h-8 flex items-center justify-center border border-teal-800 rounded-lg bg-teal-900 px-3 text-sm text-gray-300 font-medium leading-none outline-none transition disabled:(pointer-events-none op-40) active:(border-teal-800 bg-teal-900 shadow-lg shadow-inset) hover:(border-teal-700 bg-teal-800)"
-                                @click="phrase = localPhrase"
+                                @click="setPhrase"
                             >
                                 Set Phrase
                             </button>
