@@ -12,7 +12,7 @@ export const useApplicationStore = defineStore("app", () => {
     const audios = ref<Record<string, string>>({});
 
     const words = computed<WordData[]>(() => {
-        return phrase.value.split(" ").map((word, index) => {
+        return (phrase.value.match(/\b[\p{L}\p{N}]+\b/gu) || []).map((word, index) => {
             const _hash = hash(word.trim());
             return {
                 id: hash(`${_hash}-${index}`),
