@@ -23,6 +23,10 @@ export const WALL_PROPERTIES: Matter.IChamferableBodyDefinition = {
     friction: 0,
     frictionStatic: 0,
     restitution: 1,
+    render: {
+        fillStyle: "#1C1C1E",
+        lineWidth: 1,
+    },
 };
 
 export const BALL_LABEL_REGEX = /^ball-(?<id>\w+)$/;
