@@ -13,7 +13,7 @@ export default withNuxt(
             semi: true,
             quotes: "double",
             overrides: {
-                "style/array-bracket-newline": ["error", { multiline: true, minItems: 3 }],
+                "style/array-bracket-newline": ["error", { multiline: true }],
                 "style/function-call-argument-newline": ["error", "consistent"],
                 "style/brace-style": [
                     "error",
