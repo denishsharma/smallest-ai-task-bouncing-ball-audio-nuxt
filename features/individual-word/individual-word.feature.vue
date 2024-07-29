@@ -11,6 +11,7 @@ const applicationStore = useApplicationStore();
 const { audios } = storeToRefs(applicationStore);
 
 const word = computed(() => props.word.word);
+const truncatedWord = computed(() => word.value.length > 12 ? `${word.value.slice(0, 12)}...` : word.value);
 
 const audio = computed(() => {
     if (!Object.keys(audios.value).includes(props.word.hash)) { return null; }
@@ -22,13 +23,13 @@ const visualizerRootElement = ref<HTMLDivElement | null>(null);
 const waveSurfer = ref<WaveSurfer | null>(null);
 const isPlaying = ref(false);
 
-watchImmediate(audio, (value) => {
-    if (value === null) { return; }
-    if (!isMounted.value) { return; }
-    if (!visualizerRootElement.value) { return; }
+watchImmediate([() => audio.value, () => isMounted.value, () => visualizerRootElement.value], ([_audio, _isMounted, _visualizerRootElement]) => {
+    if (_audio === null) { return; }
+    if (!_isMounted) { return; }
+    if (!_visualizerRootElement) { return; }
 
     waveSurfer.value = WaveSurfer.create({
-        container: visualizerRootElement.value,
+        container: _visualizerRootElement,
         height: 24,
         width: 80,
         waveColor: "#404040",
@@ -40,7 +41,7 @@ watchImmediate(audio, (value) => {
         barGap: 2,
     });
 
-    waveSurfer.value.loadBlob(base64ToBlob(value, "audio/wav"));
+    waveSurfer.value.loadBlob(base64ToBlob(_audio, "audio/wav"));
 
     waveSurfer.value.on("play", () => {
         isPlaying.value = true;
@@ -78,11 +79,11 @@ function togglePlayState() {
 <template>
     <div class=":uno: min-h-8 w-full flex items-stretch justify-between gap-x-2">
         <div class=":uno: flex grow items-center">
-            <div class=":uno: min-h-5.3 flex overflow-clip border rounded-md divide-x dark:(border-dark-100 bg-dark-300 divide-dark-100)">
+            <div class=":uno: min-h-5.3 flex select-none overflow-clip border rounded-md divide-x dark:(border-dark-100 bg-dark-300 divide-dark-100)">
                 <div :style="{ backgroundColor: props.word.color }" class=":uno: w-1 shrink-0" />
 
-                <div class=":uno: flex items-center px-2 text-2.5 text-gray-300 font-semibold leading-none uppercase">
-                    {{ word }}
+                <div class=":uno: max-w-30 flex items-center px-2 text-2.5 text-gray-300 font-semibold leading-none uppercase">
+                    {{ truncatedWord }}
                 </div>
             </div>
         </div>

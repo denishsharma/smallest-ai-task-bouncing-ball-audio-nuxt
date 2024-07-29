@@ -5,7 +5,7 @@ import { Bodies, Body, Composite, Engine, Events, Render, Runner } from "matter-
 import prettyBytes from "pretty-bytes";
 import { ulid } from "ulidx";
 
-import { ADD_RANDOM_BALL, type AddRandomBallEventPayload, BALL_HIT_WORD, type BallHitWordEventPayload, HOVER_ON_WORD, type HoverOnWordEventPayload } from "~/constants/events";
+import { ADD_RANDOM_BALL, type AddRandomBallEventPayload, BALL_HIT_WORD, type BallHitWordEventPayload, HOVER_ON_WORD, type HoverOnWordEventPayload, REMOVE_BALL_FROM_SCENE, type RemoveBallFromSceneEventPayload } from "~/constants/events";
 import { ARENA_HEIGHT, ARENA_WIDTH, BALL_LABEL_REGEX, BALL_PROPERTIES, BALL_RADIUS, BOUNCE_THRESHOLD, FLOOR_LABEL_REGEX, SPEED_THRESHOLD, THROW_ANGLE, THROW_MAGNITUDE, WALL_AND_FLOOR_THICKNESS, WALL_PROPERTIES } from "~/features/arena/constants/arena";
 
 const colorHash = new ColorHash();
@@ -14,14 +14,18 @@ const applicationStore = useApplicationStore();
 const { words, hasAudioFetchedForAllWords } = storeToRefs(applicationStore);
 
 const ballsStore = useBallsStore();
+const { sceneBalls } = storeToRefs(ballsStore);
 
 const isEnvironmentReady = computed(() => {
     return hasAudioFetchedForAllWords.value;
 });
 
+const isSceneIdle = computed(() => sceneBalls.value.length === 0);
+
 const eventAddRandomBall = useEventBus<AddRandomBallEventPayload>(ADD_RANDOM_BALL);
 const eventBallHitWord = useEventBus<BallHitWordEventPayload>(BALL_HIT_WORD);
 const eventHoverOnWord = useEventBus<HoverOnWordEventPayload>(HOVER_ON_WORD);
+const eventRemoveBallFromScene = useEventBus<RemoveBallFromSceneEventPayload>(REMOVE_BALL_FROM_SCENE);
 
 const { isSupported, memory } = useMemory();
 
@@ -29,6 +33,13 @@ const arena = ref<HTMLCanvasElement | undefined>(undefined);
 
 const engine = Engine.create();
 const world = engine.world;
+
+watch(words, () => {
+    if (!isEnvironmentReady.value) { return; }
+
+    Composite.clear(world, false);
+    Composite.add(world, getWalls());
+});
 
 function getWalls() {
     const FLOOR_SEGMENT_WIDTH = ARENA_WIDTH / words.value.length;
@@ -69,6 +80,27 @@ function getWalls() {
     ];
 }
 
+function removeBallFromScene(idOrBall: string | Body) {
+    const ball = typeof idOrBall === "string" ? Composite.allBodies(world).find(body => body.label === `ball-${idOrBall}`) : idOrBall;
+    if (!ball) { return; }
+
+    Composite.remove(world, ball);
+    const ballMatch = ball.label.match(BALL_LABEL_REGEX);
+    if (ballMatch) {
+        eventBallHitWord.emit({
+            ball: ballMatch.groups!.id,
+            word: null,
+        });
+
+        ballsStore.manageSceneBall(ballMatch.groups!.id, "remove");
+    }
+}
+
+eventRemoveBallFromScene.on((data) => {
+    if (!isEnvironmentReady.value) { return; }
+    removeBallFromScene(data.ball);
+});
+
 eventAddRandomBall.on((data) => {
     if (!isEnvironmentReady.value) { return; }
 
@@ -87,6 +119,8 @@ eventAddRandomBall.on((data) => {
         },
     );
 
+    ballsStore.manageSceneBall(_id, "add");
+
     const angle = THROW_ANGLE * (Math.random() * 0.5 + 0.25);
     const force = {
         x: THROW_MAGNITUDE * Math.cos(angle) * (Math.random() < 0.5 ? 1 : -1),
@@ -102,14 +136,7 @@ eventAddRandomBall.on((data) => {
         const isBouncing = Math.abs(ball.velocity.y) > BOUNCE_THRESHOLD;
 
         if (velocity < SPEED_THRESHOLD && !isBouncing) {
-            Composite.remove(world, ball);
-            const ballMatch = ball.label.match(BALL_LABEL_REGEX);
-            if (ballMatch) {
-                eventBallHitWord.emit({
-                    ball: ballMatch.groups!.id,
-                    word: null,
-                });
-            }
+            removeBallFromScene(ball);
             Events.off(engine, "afterUpdate", checkBallAtRest);
         }
     };
@@ -159,10 +186,21 @@ onMounted(async () => {
 
                 if (ballMatch && floorMatch) {
                     if (isEnvironmentReady.value) {
-                        eventBallHitWord.emit({
-                            ball: ballMatch.groups!.id,
-                            word: applicationStore.getWordData(floorMatch.groups!.id),
-                        });
+                        const normal = { x: 0, y: -1 }; // Normal vector of the floor
+                        const velocity = ball.velocity;
+                        const dotProduct = velocity.x * normal.x + velocity.y * normal.y;
+                        const magnitudeVelocity = Math.sqrt(velocity.x ** 2 + velocity.y ** 2);
+                        const magnitudeNormal = Math.sqrt(normal.x ** 2 + normal.y ** 2);
+                        const angle = Math.acos(dotProduct / (magnitudeVelocity * magnitudeNormal)) * (180 / Math.PI);
+
+                        const BOUNCE_ANGLE_THRESHOLD = 130;
+
+                        if (angle > BOUNCE_ANGLE_THRESHOLD) {
+                            eventBallHitWord.emit({
+                                ball: ballMatch.groups!.id,
+                                word: applicationStore.getWordData(floorMatch.groups!.id),
+                            });
+                        }
                     }
                 }
             }
@@ -208,7 +246,13 @@ onMounted(async () => {
                         Press <kbd class=":uno: border border-dark-100 rounded-md bg-dark-300 px-1 pt-0.5 font-medium leading-none uppercase">Space</kbd> to add a random ball to the scene.
                     </div>
 
-                    <div>
+                    <div class=":uno: flex items-center gap-x-2">
+                        <div class=":uno: leading-none">
+                            <span>Scene:</span> {{ isSceneIdle ? "Idle" : "Active" }}
+                        </div>
+
+                        <div class=":uno: size-1 rounded-full bg-dark-300" />
+
                         <div v-if="isSupported && memory" class=":uno: flex gap-x-2">
                             <div class=":uno: leading-none">
                                 <span>Page Memory:</span> {{ prettyBytes(memory.usedJSHeapSize) }} / {{ prettyBytes(memory.totalJSHeapSize) }}

@@ -25,3 +25,9 @@ export interface BallAudioReceivedEventPayload {
 }
 
 export const BALL_AUDIO_RECEIVED: EventBusKey<BallAudioReceivedEventPayload> = Symbol("ball-audio-received");
+
+export interface RemoveBallFromSceneEventPayload {
+    ball: string;
+}
+
+export const REMOVE_BALL_FROM_SCENE: EventBusKey<RemoveBallFromSceneEventPayload> = Symbol("remove-ball-from-scene");

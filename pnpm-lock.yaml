@@ -31,6 +31,9 @@ importers:
       '@faker-js/faker':
         specifier: ^8.4.1
         version: 8.4.1
+      '@formkit/auto-animate':
+        specifier: ^0.8.2
+        version: 0.8.2
       '@nuxt/eslint':
         specifier: ^0.3.13
         version: 0.3.13(eslint@9.7.0)(magicast@0.3.4)(rollup@4.19.0)(typescript@5.5.4)(vite@5.3.5(@types/node@20.14.12)(sass@1.77.8)(terser@5.31.3))
@@ -990,6 +993,9 @@ packages:
   '@fastify/busboy@2.1.1':
     resolution: {integrity: sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==}
     engines: {node: '>=14'}
+
+  '@formkit/auto-animate@0.8.2':
+    resolution: {integrity: sha512-SwPWfeRa5veb1hOIBMdzI+73te5puUBHmqqaF1Bu7FjvxlYSz/kJcZKSa9Cg60zL0uRNeJL2SbRxV6Jp6Q1nFQ==}
 
   '@humanwhocodes/module-importer@1.0.1':
     resolution: {integrity: sha512-bxveV4V8v5Yb4ncFTT3rPSgZBOpCkjfK0y4oVVVJwIuDVBRMDXrPyXRL988i5ap9m9bnyEEjWfm5WkBmtffLfA==}
@@ -6556,6 +6562,8 @@ snapshots:
   '@faker-js/faker@8.4.1': {}
 
   '@fastify/busboy@2.1.1': {}
+
+  '@formkit/auto-animate@0.8.2': {}
 
   '@humanwhocodes/module-importer@1.0.1': {}
 

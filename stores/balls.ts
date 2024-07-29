@@ -5,9 +5,33 @@ import { ulid } from "ulidx";
 import type { WordData } from "~/types/application";
 import type { BallRecord } from "~/types/balls";
 
+import { REMOVE_BALL_FROM_SCENE, type RemoveBallFromSceneEventPayload } from "~/constants/events";
+
 const colorHash = new ColorHash();
 
 export const useBallsStore = defineStore("balls", () => {
+    const eventRemoveBallFromScene = useEventBus<RemoveBallFromSceneEventPayload>(REMOVE_BALL_FROM_SCENE);
+
+    const sceneBalls = ref<string[]>([]);
+    const isClearingScene = ref(false);
+    const shouldStartClearingScene = ref(false);
+
+    watch([() => shouldStartClearingScene.value, () => sceneBalls.value], ([_shouldStartClearingScene, _sceneBalls]) => {
+        if (_sceneBalls.length === 0) {
+            isClearingScene.value = false;
+            shouldStartClearingScene.value = false;
+            return;
+        }
+
+        if (_shouldStartClearingScene && _sceneBalls.length > 0) {
+            isClearingScene.value = true;
+
+            for (const ball of _sceneBalls) {
+                eventRemoveBallFromScene.emit({ ball });
+            }
+        }
+    }, { immediate: true });
+
     const internalBalls = ref<string[]>([]);
     const hits = ref<Record<string, ({ id: string; word: WordData } | "destroyed")[]>>({});
     const audios = ref<Record<string, string>>({});
@@ -37,12 +61,28 @@ export const useBallsStore = defineStore("balls", () => {
         audios.value[ball] = audio;
     }
 
+    function manageSceneBall(ball: string, action: "add" | "remove") {
+        if (action === "add") {
+            sceneBalls.value = [...sceneBalls.value, ball];
+        } else {
+            sceneBalls.value = sceneBalls.value.filter(b => b !== ball);
+        }
+    }
+
+    function clearScene() {
+        shouldStartClearingScene.value = true;
+    }
+
     return {
+        sceneBalls,
+        isClearingScene,
         balls,
         hits,
         audios,
         recordHit,
         addAudio,
+        manageSceneBall,
+        clearScene,
     };
 });
 

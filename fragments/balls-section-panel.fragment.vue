@@ -1,11 +1,17 @@
 <script lang="ts" setup>
+import { vAutoAnimate } from "@formkit/auto-animate";
+
 const ballsStore = useBallsStore();
 const { balls } = storeToRefs(ballsStore);
+
+const ballsWithMinimumOneHit = computed(() => balls.value.filter((ball) => {
+    return ball.hits.length > 0 && ball.hits[0] !== "destroyed";
+}));
 </script>
 
 <template>
     <SectionPanel heading="Balls">
-        <div class=":uno: flex flex-col divide-y dark:(divide-dark-300)">
+        <div v-auto-animate class=":uno: flex flex-col divide-y dark:(divide-dark-300)">
             <div v-if="balls.length === 0" class=":uno: relative min-h-50 flex flex-col select-none items-center justify-center px-3">
                 <div class=":uno: size-10 flex items-center justify-center rounded-full bg-dark-300">
                     <Icon class=":uno: size-4.5 text-gray-500" name="i-lucide:database" />
@@ -20,7 +26,7 @@ const { balls } = storeToRefs(ballsStore);
             </div>
 
             <template v-else>
-                <div v-for="ball in balls" :key="ball.id" class=":uno: flex select-none items-center px-3 py-4 transition-background-color hover:(bg-dark-500/50)">
+                <div v-for="ball in ballsWithMinimumOneHit" :key="ball.id" class=":uno: flex select-none items-center px-3 py-4 transition-background-color hover:(bg-dark-500/50)">
                     <IndividualBallRecordFeature :record="ball" />
                 </div>
             </template>
