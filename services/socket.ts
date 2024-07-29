@@ -4,7 +4,7 @@ import { BALL_AUDIO_RECEIVED, type BallAudioReceivedEventPayload } from "~/const
 
 const eventBallAudioReceived = useEventBus<BallAudioReceivedEventPayload>(BALL_AUDIO_RECEIVED);
 
-export const socket = io("http://localhost:3333", {
+export const socket = io("https://smallest-ai-task-bouncing-ball-audio.onrender.com", {
     withCredentials: true,
 });
 
