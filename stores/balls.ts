@@ -29,15 +29,15 @@ export const useBallsStore = defineStore("balls", () => {
         }
     }, { immediate: true });
 
-    const internalBalls = ref<string[]>([]);
+    const internalBalls = ref<{ id: string; name: string }[]>([]);
     const hits = ref<Record<string, ({ id: string; word: WordData } | "destroyed")[]>>({});
     const audios = ref<Record<string, string>>({});
 
     const balls = computed<BallRecord[]>(() => {
-        return internalBalls.value.map((ball) => {
+        return internalBalls.value.map(({ id: ball, name }) => {
             return {
                 id: ball,
-                name: `${faker.person.firstName()} ${faker.person.lastName()}'s ball`,
+                name,
                 color: colorHash(ball).hex(),
                 hits: hits.value[ball] || [],
                 audio: audios.value[ball] || null,
@@ -47,7 +47,7 @@ export const useBallsStore = defineStore("balls", () => {
 
     function recordHit(ball: string, data: WordData | "destroyed") {
         if (!hits.value[ball]) {
-            internalBalls.value.unshift(ball);
+            internalBalls.value.unshift({ id: ball, name: `${faker.person.firstName()} ${faker.person.lastName()}'s ball` });
             hits.value[ball] = [];
         }
 
