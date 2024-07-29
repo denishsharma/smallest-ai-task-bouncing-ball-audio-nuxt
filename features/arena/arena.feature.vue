@@ -1,14 +1,13 @@
 <script lang="ts" setup>
 import chroma from "chroma-js";
-import ColorHash from "color-hash";
-import { Bodies, Body, Composite, Engine, Events, Render, Runner } from "matter-js";
+import matterjs from "matter-js";
 import prettyBytes from "pretty-bytes";
 import { ulid } from "ulidx";
 
 import { ADD_RANDOM_BALL, type AddRandomBallEventPayload, BALL_HIT_WORD, type BallHitWordEventPayload, HOVER_ON_WORD, type HoverOnWordEventPayload, REMOVE_BALL_FROM_SCENE, type RemoveBallFromSceneEventPayload } from "~/constants/events";
 import { ARENA_HEIGHT, ARENA_WIDTH, BALL_LABEL_REGEX, BALL_PROPERTIES, BALL_RADIUS, BOUNCE_THRESHOLD, FLOOR_LABEL_REGEX, SPEED_THRESHOLD, THROW_ANGLE, THROW_MAGNITUDE, WALL_AND_FLOOR_THICKNESS, WALL_PROPERTIES } from "~/features/arena/constants/arena";
 
-const colorHash = new ColorHash();
+const { Bodies, Body, Composite, Engine, Events, Render, Runner } = matterjs;
 
 const applicationStore = useApplicationStore();
 const { words, hasAudioFetchedForAllWords, isSocketConnected } = storeToRefs(applicationStore);
@@ -44,7 +43,7 @@ watch(words, () => {
 function getWalls() {
     const FLOOR_SEGMENT_WIDTH = ARENA_WIDTH / words.value.length;
 
-    const floorSegments: Body[] = [];
+    const floorSegments: Matter.Body[] = [];
     words.value.forEach(({ id, word, color }, index) => {
         const segment = Bodies.rectangle(
             FLOOR_SEGMENT_WIDTH * index + FLOOR_SEGMENT_WIDTH / 2,
@@ -80,7 +79,7 @@ function getWalls() {
     ];
 }
 
-function removeBallFromScene(idOrBall: string | Body) {
+function removeBallFromScene(idOrBall: string | Matter.Body) {
     const ball = typeof idOrBall === "string" ? Composite.allBodies(world).find(body => body.label === `ball-${idOrBall}`) : idOrBall;
     if (!ball) { return; }
 
@@ -114,7 +113,7 @@ eventAddRandomBall.on((data) => {
             ...BALL_PROPERTIES,
             label: `ball-${_id}`,
             render: {
-                fillStyle: colorHash.hex(_id),
+                fillStyle: colorHash(_id).hex(),
             },
         },
     );

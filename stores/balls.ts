@@ -1,13 +1,10 @@
 import { faker } from "@faker-js/faker";
-import ColorHash from "color-hash";
 import { ulid } from "ulidx";
 
 import type { WordData } from "~/types/application";
 import type { BallRecord } from "~/types/balls";
 
 import { REMOVE_BALL_FROM_SCENE, type RemoveBallFromSceneEventPayload } from "~/constants/events";
-
-const colorHash = new ColorHash();
 
 export const useBallsStore = defineStore("balls", () => {
     const eventRemoveBallFromScene = useEventBus<RemoveBallFromSceneEventPayload>(REMOVE_BALL_FROM_SCENE);
@@ -41,7 +38,7 @@ export const useBallsStore = defineStore("balls", () => {
             return {
                 id: ball,
                 name: `${faker.person.firstName()} ${faker.person.lastName()}'s ball`,
-                color: colorHash.hex(ball),
+                color: colorHash(ball).hex(),
                 hits: hits.value[ball] || [],
                 audio: audios.value[ball] || null,
             };

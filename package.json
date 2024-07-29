@@ -69,7 +69,6 @@
         "@vueuse/nuxt": "^11.0.0-beta.2",
         "@vueuse/sound": "^2.0.1",
         "chroma-js": "^2.4.2",
-        "color-hash": "^2.0.2",
         "destr": "^2.0.3",
         "eslint": "^8.57.0",
         "eslint-plugin-command": "^0.2.3",

@@ -1,9 +1,6 @@
-import ColorHash from "color-hash";
 import { hash } from "ohash";
 
 import type { WordData } from "~/types/application";
-
-const colorHash = new ColorHash();
 
 export const useApplicationStore = defineStore("app", () => {
     const isSocketConnected = ref<boolean>(false);
@@ -21,7 +18,7 @@ export const useApplicationStore = defineStore("app", () => {
                 id: hash(`${_hash}-${index}`),
                 word: word.trim(),
                 hash: _hash,
-                color: colorHash.hex(_hash),
+                color: colorHash(_hash).hex(),
                 status: fetchQueue.value.includes(_hash) ? "fetching" : audios.value[_hash] ? "available" : "idle",
             };
         });
