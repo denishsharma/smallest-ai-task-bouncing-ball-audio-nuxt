@@ -8,6 +8,12 @@ export const socket = io("http://localhost:3333", {
     withCredentials: true,
 });
 
+socket.on("connect", () => {
+    const applicationStore = useApplicationStore();
+    const { isSocketConnected } = storeToRefs(applicationStore);
+    isSocketConnected.value = true;
+});
+
 socket.on("ball-audio", (data: { ball: string; audio: string }) => {
     eventBallAudioReceived.emit(data);
 });

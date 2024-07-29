@@ -16,8 +16,8 @@ export default defineNuxtConfig({
         },
     },
     site: {
-        name: "Nuxt Starter Template",
-        description: "Nuxt 3 minimal starter template wih Vue 3, TypeScript, Unocss, SEO and more. Made by Denish Sharma",
+        name: "Bouncing Ball Audio | Task by smallest.ai",
+        description: "Create a 2D arena with gravity where a ball spawns randomly, bounces on audio-triggering floor panes, and sends concatenated audio to the backend, which is then playable/downloadable on the frontend. Made by Denish Sharma",
     },
     typescript: {
         typeCheck: "build",

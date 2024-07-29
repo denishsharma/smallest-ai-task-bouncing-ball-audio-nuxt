@@ -6,6 +6,8 @@ import type { WordData } from "~/types/application";
 const colorHash = new ColorHash();
 
 export const useApplicationStore = defineStore("app", () => {
+    const isSocketConnected = ref<boolean>(false);
+
     const phrase = ref<string>("I am an amazing frontend developer at night");
 
     const fetchQueue = ref<string[]>([]);
@@ -55,6 +57,7 @@ export const useApplicationStore = defineStore("app", () => {
     }
 
     return {
+        isSocketConnected,
         phrase,
         words,
         audios,

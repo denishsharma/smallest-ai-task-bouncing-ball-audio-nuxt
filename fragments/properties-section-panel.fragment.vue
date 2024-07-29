@@ -4,13 +4,13 @@ import { ADD_RANDOM_BALL, type AddRandomBallEventPayload } from "~/constants/eve
 const eventAddRandomBall = useEventBus<AddRandomBallEventPayload>(ADD_RANDOM_BALL);
 
 const applicationStore = useApplicationStore();
-const { phrase, hasAudioFetchedForAllWords } = storeToRefs(applicationStore);
+const { phrase, hasAudioFetchedForAllWords, isSocketConnected } = storeToRefs(applicationStore);
 
 const ballsStore = useBallsStore();
 const { sceneBalls, isClearingScene } = storeToRefs(ballsStore);
 
 const isEnvironmentReady = computed(() => {
-    return hasAudioFetchedForAllWords.value;
+    return hasAudioFetchedForAllWords.value && isSocketConnected.value;
 });
 
 const isSceneIdle = computed(() => sceneBalls.value.length === 0);

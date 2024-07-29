@@ -175,6 +175,9 @@ importers:
       vite:
         specifier: ^5.3.5
         version: 5.3.5(@types/node@20.14.12)(sass@1.77.8)(terser@5.31.3)
+      vue-collapsed:
+        specifier: ^1.3.3
+        version: 1.3.3
       vue-tsc:
         specifier: ^2.0.29
         version: 2.0.29(typescript@5.5.4)
@@ -5612,6 +5615,9 @@ packages:
 
   vue-bundle-renderer@2.1.0:
     resolution: {integrity: sha512-uZ+5ZJdZ/b43gMblWtcpikY6spJd0nERaM/1RtgioXNfWFbjKlUwrS8HlrddN6T2xtptmOouWclxLUkpgcVX3Q==}
+
+  vue-collapsed@1.3.3:
+    resolution: {integrity: sha512-4Fj5tq4UFYKU3Lfm6ZhlKlE4TL35WcvKPtWN4hTv+gcAAX+aGZODoy78AvTiEkVWMjR8JiVdrz2yMwpErUZK8Q==}
 
   vue-demi@0.14.10:
     resolution: {integrity: sha512-nMZBOwuzabUO0nLgIcc6rycZEebF6eeUfaiQx9+WSk8e29IbLvPU9feI6tqW4kTo3hvoYAJkMh8n8D0fuISphg==}
@@ -12399,6 +12405,8 @@ snapshots:
   vue-bundle-renderer@2.1.0:
     dependencies:
       ufo: 1.5.4
+
+  vue-collapsed@1.3.3: {}
 
   vue-demi@0.14.10(vue@3.4.34(typescript@5.5.4)):
     dependencies:

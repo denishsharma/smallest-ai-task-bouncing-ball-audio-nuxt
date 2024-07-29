@@ -11,13 +11,13 @@ import { ARENA_HEIGHT, ARENA_WIDTH, BALL_LABEL_REGEX, BALL_PROPERTIES, BALL_RADI
 const colorHash = new ColorHash();
 
 const applicationStore = useApplicationStore();
-const { words, hasAudioFetchedForAllWords } = storeToRefs(applicationStore);
+const { words, hasAudioFetchedForAllWords, isSocketConnected } = storeToRefs(applicationStore);
 
 const ballsStore = useBallsStore();
 const { sceneBalls } = storeToRefs(ballsStore);
 
 const isEnvironmentReady = computed(() => {
-    return hasAudioFetchedForAllWords.value;
+    return hasAudioFetchedForAllWords.value && isSocketConnected.value;
 });
 
 const isSceneIdle = computed(() => sceneBalls.value.length === 0);
