@@ -50,12 +50,17 @@ export const useApplicationStore = defineStore("app", () => {
         return word;
     }
 
+    function getWordAudio(id: string): string {
+        return audios.value[getWordData(id).hash];
+    }
+
     return {
         phrase,
         words,
         audios,
         hasAudioFetchedForAllWords,
         getWordData,
+        getWordAudio,
     };
 });
 

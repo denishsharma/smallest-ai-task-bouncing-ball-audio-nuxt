@@ -1,17 +1,26 @@
 <script lang="ts" setup>
 import chroma from "chroma-js";
+import ColorHash from "color-hash";
 import { Bodies, Body, Composite, Engine, Events, Render, Runner } from "matter-js";
 import prettyBytes from "pretty-bytes";
 import { ulid } from "ulidx";
 
-import { HOVER_ON_WORD, type HoverOnWordEventPayload, SCENE_ADD_RANDOM_BALL, SCENE_BALL_HIT_FLOOR, type SceneAddBallEventPayload, type SceneBallHitFloorEventPayload } from "~/constants/events";
+import { ADD_RANDOM_BALL, type AddRandomBallEventPayload, BALL_HIT_WORD, type BallHitWordEventPayload, HOVER_ON_WORD, type HoverOnWordEventPayload } from "~/constants/events";
 import { ARENA_HEIGHT, ARENA_WIDTH, BALL_LABEL_REGEX, BALL_PROPERTIES, BALL_RADIUS, BOUNCE_THRESHOLD, FLOOR_LABEL_REGEX, SPEED_THRESHOLD, THROW_ANGLE, THROW_MAGNITUDE, WALL_AND_FLOOR_THICKNESS, WALL_PROPERTIES } from "~/features/arena/constants/arena";
+
+const colorHash = new ColorHash();
 
 const applicationStore = useApplicationStore();
 const { words, hasAudioFetchedForAllWords } = storeToRefs(applicationStore);
 
-const eventSceneAddRandomBall = useEventBus<SceneAddBallEventPayload>(SCENE_ADD_RANDOM_BALL);
-const eventSceneBallHitFloor = useEventBus<SceneBallHitFloorEventPayload>(SCENE_BALL_HIT_FLOOR);
+const ballsStore = useBallsStore();
+
+const isEnvironmentReady = computed(() => {
+    return hasAudioFetchedForAllWords.value;
+});
+
+const eventAddRandomBall = useEventBus<AddRandomBallEventPayload>(ADD_RANDOM_BALL);
+const eventBallHitWord = useEventBus<BallHitWordEventPayload>(BALL_HIT_WORD);
 const eventHoverOnWord = useEventBus<HoverOnWordEventPayload>(HOVER_ON_WORD);
 
 const { isSupported, memory } = useMemory();
@@ -60,14 +69,21 @@ function getWalls() {
     ];
 }
 
-eventSceneAddRandomBall.on((data) => {
+eventAddRandomBall.on((data) => {
+    if (!isEnvironmentReady.value) { return; }
+
+    const _id = ulid();
+
     const ball = Bodies.circle(
         Math.random() * ARENA_WIDTH / 2 + ARENA_WIDTH / 4,
         480 * (Math.random() * 0.08 + 0.05),
         data.radius || BALL_RADIUS,
         {
             ...BALL_PROPERTIES,
-            label: `ball-${ulid()}`,
+            label: `ball-${_id}`,
+            render: {
+                fillStyle: colorHash.hex(_id),
+            },
         },
     );
 
@@ -89,9 +105,9 @@ eventSceneAddRandomBall.on((data) => {
             Composite.remove(world, ball);
             const ballMatch = ball.label.match(BALL_LABEL_REGEX);
             if (ballMatch) {
-                eventSceneBallHitFloor.emit({
+                eventBallHitWord.emit({
                     ball: ballMatch.groups!.id,
-                    floor: null,
+                    word: null,
                 });
             }
             Events.off(engine, "afterUpdate", checkBallAtRest);
@@ -99,6 +115,11 @@ eventSceneAddRandomBall.on((data) => {
     };
 
     Events.on(engine, "afterUpdate", checkBallAtRest);
+});
+
+eventBallHitWord.on((payload) => {
+    if (!isEnvironmentReady.value) { return; }
+    ballsStore.recordHit(payload.ball, payload.word || "destroyed");
 });
 
 onMounted(async () => {
@@ -137,13 +158,12 @@ onMounted(async () => {
                 const floorMatch = floor.label.match(FLOOR_LABEL_REGEX);
 
                 if (ballMatch && floorMatch) {
-                    eventSceneBallHitFloor.emit({
-                        ball: ballMatch.groups!.id,
-                        floor: {
-                            id: floorMatch.groups!.id,
+                    if (isEnvironmentReady.value) {
+                        eventBallHitWord.emit({
+                            ball: ballMatch.groups!.id,
                             word: applicationStore.getWordData(floorMatch.groups!.id),
-                        },
-                    });
+                        });
+                    }
                 }
             }
         });
@@ -183,9 +203,9 @@ onMounted(async () => {
                     </Transition>
                 </div>
 
-                <div class=":uno: h-8 flex items-center justify-between gap-x-4 px-10px text-xs text-gray-500">
+                <div class=":uno: h-8 flex select-none items-center justify-between gap-x-4 px-10px text-xs text-gray-500">
                     <div>
-                        Bounce threshold: {{ BOUNCE_THRESHOLD }} | Speed threshold: {{ SPEED_THRESHOLD }}
+                        Press <kbd class=":uno: border border-dark-100 rounded-md bg-dark-300 px-1 pt-0.5 font-medium leading-none uppercase">Space</kbd> to add a random ball to the scene.
                     </div>
 
                     <div>

@@ -1,16 +1,16 @@
 import type { EventBusKey } from "@vueuse/core";
 import type { WordData } from "~/types/application";
 
-export interface SceneAddBallEventPayload { radius?: number }
+export interface AddRandomBallEventPayload { radius?: number }
 
-export const SCENE_ADD_RANDOM_BALL: EventBusKey<SceneAddBallEventPayload> = Symbol("scene-add-random-ball");
+export const ADD_RANDOM_BALL: EventBusKey<AddRandomBallEventPayload> = Symbol("add-random-ball");
 
-export interface SceneBallHitFloorEventPayload {
+export interface BallHitWordEventPayload {
     ball: string;
-    floor: { id: string; word: WordData } | null;
+    word: WordData | null;
 }
 
-export const SCENE_BALL_HIT_FLOOR: EventBusKey<SceneAddBallEventPayload> = Symbol("scene-ball-hit-floor");
+export const BALL_HIT_WORD: EventBusKey<BallHitWordEventPayload> = Symbol("ball-hit-word");
 
 export interface HoverOnWordEventPayload {
     hover: boolean;
@@ -18,3 +18,10 @@ export interface HoverOnWordEventPayload {
 }
 
 export const HOVER_ON_WORD: EventBusKey<HoverOnWordEventPayload> = Symbol("hover-on-word");
+
+export interface BallAudioReceivedEventPayload {
+    ball: string;
+    audio: string;
+}
+
+export const BALL_AUDIO_RECEIVED: EventBusKey<BallAudioReceivedEventPayload> = Symbol("ball-audio-received");

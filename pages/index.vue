@@ -1,37 +1,54 @@
 <script lang="ts" setup>
 import type { WordData } from "~/types/application";
 
-import { HOVER_ON_WORD, type HoverOnWordEventPayload, SCENE_ADD_RANDOM_BALL, SCENE_BALL_HIT_FLOOR, type SceneAddBallEventPayload, type SceneBallHitFloorEventPayload } from "~/constants/events";
+import { ADD_RANDOM_BALL, type AddRandomBallEventPayload, BALL_AUDIO_RECEIVED, BALL_HIT_WORD, type BallAudioReceivedEventPayload, type BallHitWordEventPayload, HOVER_ON_WORD, type HoverOnWordEventPayload } from "~/constants/events";
+import { sendBallHitFloor } from "~/services/socket";
 
 definePageMeta({
     layout: "app",
+    colorMode: "dark",
 });
 
-const { $socket } = useNuxtApp();
-
-const eventSceneAddRandomBall = useEventBus<SceneAddBallEventPayload>(SCENE_ADD_RANDOM_BALL);
-const eventSceneBallHitFloor = useEventBus<SceneBallHitFloorEventPayload>(SCENE_BALL_HIT_FLOOR);
+const eventAddRandomBall = useEventBus<AddRandomBallEventPayload>(ADD_RANDOM_BALL);
+const eventBallHitFloor = useEventBus<BallHitWordEventPayload>(BALL_HIT_WORD);
 const eventHoverOnWord = useEventBus<HoverOnWordEventPayload>(HOVER_ON_WORD);
+const eventBallAudioReceived = useEventBus<BallAudioReceivedEventPayload>(BALL_AUDIO_RECEIVED);
 
-const { space } = useMagicKeys();
+const { space } = useMagicKeys({
+    passive: false,
+    onEventFired: (e) => {
+        if (e.key === " ") {
+            e.preventDefault();
+        }
+    },
+});
 
 const applicationStore = useApplicationStore();
 const { words } = storeToRefs(applicationStore);
 
+const ballsStore = useBallsStore();
+
 whenever(space, () => {
-    eventSceneAddRandomBall.emit({});
+    eventAddRandomBall.emit({});
 });
 
-eventSceneBallHitFloor.on(async (data) => {
-    console.log(data);
-
-    if (data.floor === null) {
-        $socket.emit("ball-hit-floor-end", data);
+eventBallHitFloor.on(async (data) => {
+    if (data.word === null) {
+        sendBallHitFloor(data.ball, null);
         return;
     }
 
-    const audio = "abc";
-    $socket.emit("ball-hit-floor", { ...data, audio });
+    sendBallHitFloor(data.ball, {
+        audio: applicationStore.getWordAudio(data.word.id),
+        word: {
+            text: data.word.word,
+            hash: data.word.hash,
+        },
+    });
+});
+
+eventBallAudioReceived.on((data) => {
+    ballsStore.addAudio(data.ball, data.audio);
 });
 
 function emitHoverOnWord(word: WordData, hover: boolean) {
@@ -64,7 +81,7 @@ function emitHoverOnWord(word: WordData, hover: boolean) {
                                 <div
                                     v-for="word in words"
                                     :key="word.hash"
-                                    class=":uno: h-10 flex items-center px-3 transition hover:(bg-dark-600)"
+                                    class=":uno: h-10 flex items-center px-3 transition hover:(bg-dark-500/50)"
                                     @mouseenter="() => emitHoverOnWord(word, true)"
                                     @mouseleave="() => emitHoverOnWord(word, false)"
                                 >
@@ -75,9 +92,7 @@ function emitHoverOnWord(word: WordData, hover: boolean) {
                     </div>
 
                     <div class=":uno: grow">
-                        <SectionPanel heading="Ball Audio">
-                            hello
-                        </SectionPanel>
+                        <BallsSectionPanelFragment />
                     </div>
                 </div>
             </div>
