@@ -1,4 +1,4 @@
-import { addImportsDir, addPlugin, createResolver, defineNuxtModule } from "nuxt/kit";
+import { addPlugin, createResolver, defineNuxtModule } from "nuxt/kit";
 
 export default defineNuxtModule({
     meta: {
@@ -8,6 +8,5 @@ export default defineNuxtModule({
         const { resolve } = createResolver(import.meta.url);
 
         addPlugin(resolve("./plugin.ts"));
-        addImportsDir(resolve("./constants"));
     },
 });

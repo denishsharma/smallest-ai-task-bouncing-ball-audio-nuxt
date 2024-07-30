@@ -3,7 +3,7 @@ import { OverlayScrollbarsComponent } from "overlayscrollbars-vue";
 </script>
 
 <template>
-    <OverlayScrollbarsComponent :defer="true" :options="defaultOverlayscrollbarsOptions" class=":uno: h-full">
+    <OverlayScrollbarsComponent :defer="true" :options="{ overflow: { x: 'hidden' }, scrollbars: { autoHide: 'move', clickScroll: true } }" class=":uno: h-full">
         <div class=":uno: min-h-full flex flex-col">
             <slot />
         </div>
