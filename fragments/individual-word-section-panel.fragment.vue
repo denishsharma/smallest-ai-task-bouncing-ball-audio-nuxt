@@ -5,6 +5,8 @@ import type { WordData } from "~/types/application";
 
 import { HOVER_ON_WORD, type HoverOnWordEventPayload } from "~/constants/events";
 
+const { isDesktopOrTablet } = useDevice();
+
 const eventHoverOnWord = useEventBus<HoverOnWordEventPayload>(HOVER_ON_WORD);
 
 const applicationStore = useApplicationStore();
@@ -16,7 +18,7 @@ function emitHoverOnWord(word: WordData, hover: boolean) {
 </script>
 
 <template>
-    <SectionPanel heading="Individual Word">
+    <SectionPanel :expanded="isDesktopOrTablet" heading="Individual Word">
         <div v-auto-animate class=":uno: flex flex-col divide-y dark:(divide-dark-300)">
             <div
                 v-for="word in words"

@@ -42,7 +42,11 @@ export default defineNuxtConfig({
         "@pinia/nuxt",
         "@pinia-plugin-persistedstate/nuxt",
         "nuxt-api-party",
+        "@nuxtjs/device",
     ],
+    device: {
+        refreshOnResize: true,
+    },
     apiParty: {
         server: {
             basePath: "_proxy_",

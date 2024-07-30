@@ -85,7 +85,7 @@ function togglePlayState() {
 
 <template>
     <div :class="{ ':uno: animate-pulse': !doesBallDestroyWord }" class=":uno: w-full flex flex-col">
-        <div class=":uno: h-8 flex items-stretch justify-between gap-x-2">
+        <div class=":uno: relative h-8 flex items-stretch justify-between gap-x-2">
             <div class=":uno: flex grow items-center">
                 <div class=":uno: flex items-center">
                     <div :style="{ backgroundColor: record.color }" class=":uno: size-7 flex items-center justify-center rounded-full shadow-lg">
@@ -112,9 +112,9 @@ function togglePlayState() {
                 </div>
             </div>
 
-            <div class=":uno: flex shrink-0 items-center -mr-1.5">
+            <div :data-playing="isPlaying" class=":uno: group transition-background flex shrink-0 items-center transition-padding <lg:(absolute right-0 h-full data-[playing=true]:from-transparent data-[playing=true]:via-dark-600 data-[playing=true]:to-dark-600 data-[playing=true]:bg-gradient-to-r data-[playing=true]:pl-56) -mr-1.5">
                 <template v-if="doesBallDestroyWord">
-                    <div v-show="record.audio !== null" ref="visualizerRootElement" class=":uno: mr-2" />
+                    <div v-show="record.audio !== null" ref="visualizerRootElement" class=":uno: mr-2 op-0 transition group-data-[playing=true]:(op-100)" />
 
                     <button :disabled="record.audio === null" class=":uno: active:inset size-7 flex items-center justify-center border border-transparent rounded-full bg-transparent outline-none transition disabled:(pointer-events-none op-40) active:(border-dark-200 bg-dark-400 shadow-md) hover:(border-dark-200 bg-dark-300 shadow-sm)" @click="togglePlayState">
                         <Icon v-if="props.record.audio === null" class=":uno: size-4 text-gray-500" name="i-svg-spinners:180-ring-with-bg" />
