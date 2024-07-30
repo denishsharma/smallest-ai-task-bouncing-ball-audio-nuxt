@@ -23,7 +23,8 @@ const visualizerRootElement = ref<HTMLDivElement | null>(null);
 const waveSurfer = ref<WaveSurfer | null>(null);
 const isPlaying = ref(false);
 
-watchImmediate([() => audio.value, () => isMounted.value, () => visualizerRootElement.value], ([_audio, _isMounted, _visualizerRootElement]) => {
+watchImmediate([() => audio.value, () => isMounted.value, () => visualizerRootElement.value], async ([_audio, _isMounted, _visualizerRootElement]) => {
+    if (!import.meta.client) { return; }
     if (_audio === null) { return; }
     if (!_isMounted) { return; }
     if (!_visualizerRootElement) { return; }
@@ -41,7 +42,7 @@ watchImmediate([() => audio.value, () => isMounted.value, () => visualizerRootEl
         barGap: 2,
     });
 
-    waveSurfer.value.loadBlob(base64ToBlob(_audio, "audio/wav"));
+    await waveSurfer.value.loadBlob(base64ToBlob(_audio, "audio/wav"));
 
     waveSurfer.value.on("play", () => {
         isPlaying.value = true;
@@ -58,10 +59,6 @@ watchImmediate([() => audio.value, () => isMounted.value, () => visualizerRootEl
 
     waveSurfer.value.on("destroy", () => {
         isPlaying.value = false;
-    });
-
-    waveSurfer.value.on("interaction", () => {
-        waveSurfer.value?.play();
     });
 });
 
@@ -88,14 +85,20 @@ function togglePlayState() {
             </div>
         </div>
 
-        <div class=":uno: flex shrink-0 items-center -mr-1.5">
-            <div v-show="audio !== null" ref="visualizerRootElement" class=":uno: mr-2" />
+        <ClientOnly>
+            <template #fallback>
+                <div class=":uno: my-a h-3 w-20 flex shrink-0 animate-pulse items-center rounded-full bg-dark-400" />
+            </template>
 
-            <button :disabled="audio === null" class=":uno: active:inset size-7 flex items-center justify-center border border-transparent rounded-full bg-transparent outline-none transition disabled:(pointer-events-none op-40) active:(border-dark-200 bg-dark-400 shadow-md) hover:(border-dark-200 bg-dark-300 shadow-sm)" @click="togglePlayState">
-                <Icon v-if="props.word.status === 'fetching'" class=":uno: size-4 text-gray-500" name="i-svg-spinners:180-ring-with-bg" />
-                <Icon v-else-if="isPlaying" class=":uno: size-4 animate-pulse text-gray-500" name="i-lucide:circle-stop" />
-                <Icon v-else class=":uno: size-4 text-gray-500" name="i-lucide:circle-play" />
-            </button>
-        </div>
+            <div class=":uno: flex shrink-0 items-center -mr-1.5">
+                <div v-show="audio !== null" ref="visualizerRootElement" class=":uno: mr-2" />
+
+                <button :disabled="audio === null" class=":uno: active:inset size-7 flex items-center justify-center border border-transparent rounded-full bg-transparent outline-none transition disabled:(pointer-events-none op-40) active:(border-dark-200 bg-dark-400 shadow-md) hover:(border-dark-200 bg-dark-300 shadow-sm)" @click="togglePlayState">
+                    <Icon v-if="props.word.status === 'fetching'" class=":uno: size-4 text-gray-500" name="i-svg-spinners:180-ring-with-bg" />
+                    <Icon v-else-if="isPlaying" class=":uno: size-4 animate-pulse text-gray-500" name="i-lucide:circle-stop" />
+                    <Icon v-else class=":uno: size-4 text-gray-500" name="i-lucide:circle-play" />
+                </button>
+            </div>
+        </ClientOnly>
     </div>
 </template>
