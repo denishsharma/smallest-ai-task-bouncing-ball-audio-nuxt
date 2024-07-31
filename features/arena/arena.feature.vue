@@ -231,10 +231,21 @@ onMounted(async () => {
                     <canvas ref="arena" class=":uno: relative" />
 
                     <Transition mode="out-in" name="fade">
-                        <div v-if="!hasAudioFetchedForAllWords" class=":uno: absolute inset-0 flex flex-col select-none items-center justify-center bg-dark-200/10 backdrop-blur-xl">
+                        <div v-if="!isEnvironmentReady" class=":uno: absolute inset-0 flex flex-col select-none items-center justify-center bg-dark-200/10 backdrop-blur-xl">
                             <Icon name="i-svg-spinners:3-dots-fade" />
-                            <div class=":uno: mt-1 text-sm text-gray-500">
-                                Setting up the environment...
+                            <div class=":uno: mt-1 text-center text-sm text-gray-500">
+                                <Transition mode="out-in" name="fade">
+                                    <span v-if="!hasAudioFetchedForAllWords">
+                                        Fetching audio for words...
+                                    </span>
+                                    <span v-else-if="!isSocketConnected">
+                                        Connecting to server...
+                                    </span>
+                                </Transition>
+                                <br>
+                                <span class=":uno: animate-pulse text-xs">
+                                    If this takes too long, please refresh the page.
+                                </span>
                             </div>
                         </div>
                     </Transition>

@@ -17,6 +17,19 @@ socket.on("connect", () => {
     isSocketConnected.value = true;
 });
 
+socket.on("disconnect", () => {
+    const applicationStore = useApplicationStore();
+    const { isSocketConnected } = storeToRefs(applicationStore);
+    isSocketConnected.value = false;
+});
+
+socket.on("connect_error", (err) => {
+    const applicationStore = useApplicationStore();
+    const { isSocketConnected } = storeToRefs(applicationStore);
+    isSocketConnected.value = false;
+    console.error("Error connecting to socket, refresh page to try again", err);
+});
+
 socket.on("ball-audio", (data: { ball: string; audio: string }) => {
     eventBallAudioReceived.emit(data);
 });
