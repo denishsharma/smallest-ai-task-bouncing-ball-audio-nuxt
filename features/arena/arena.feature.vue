@@ -31,7 +31,7 @@ const eventRemoveBallFromScene = useEventBus<RemoveBallFromSceneEventPayload>(RE
 const { isSupported, memory } = useMemory();
 watch([isSupported, memory], ([_isSupported, _memory]) => {
     if (_isSupported && _memory) {
-        if (_memory.usedJSHeapSize > _memory.totalJSHeapSize * 0.9) {
+        if (_memory.usedJSHeapSize > _memory.jsHeapSizeLimit * 0.9) {
             gtag("event", "memory_usage", {
                 event_category: "arena",
                 event_label: "High Memory Usage",
