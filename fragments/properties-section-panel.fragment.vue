@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import { ADD_RANDOM_BALL, type AddRandomBallEventPayload } from "~/constants/events";
 
+const { gtag } = useScriptGoogleAnalytics();
+
 const eventAddRandomBall = useEventBus<AddRandomBallEventPayload>(ADD_RANDOM_BALL);
 
 const applicationStore = useApplicationStore();
@@ -26,6 +28,12 @@ function setPhrase() {
     if (!canPhraseBeSet.value) { return; }
     localPhrase.value = localPhrase.value.trim();
     phrase.value = localPhrase.value;
+    gtag("event", "set_phrase", { phrase: localPhrase.value });
+}
+
+function clearScene() {
+    ballsStore.clearScene();
+    gtag("event", "clear_scene");
 }
 </script>
 
@@ -99,7 +107,7 @@ function setPhrase() {
                                 <button
                                     :disabled="isClearingScene || !isEnvironmentReady"
                                     class=":uno: h-8 w-full flex items-center justify-center border border-red-800 rounded-lg bg-red-900 px-3 text-sm text-gray-300 font-medium leading-none outline-none transition disabled:(pointer-events-none op-40) active:(border-red-800 bg-red-900 shadow-lg shadow-inset) hover:(border-red-700 bg-red-800)"
-                                    @click="ballsStore.clearScene()"
+                                    @click="clearScene"
                                 >
                                     <Icon v-if="isClearingScene" class=":uno: mr-1 size-4.3" name="i-svg-spinners:180-ring-with-bg" />
                                     <Icon v-else class=":uno: mr-1 size-4.3" name="i-lucide:refresh-ccw" />

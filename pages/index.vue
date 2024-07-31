@@ -18,6 +18,8 @@ useHead({
     ],
 });
 
+const { gtag } = useScriptGoogleAnalytics();
+
 const eventAddRandomBall = useEventBus<AddRandomBallEventPayload>(ADD_RANDOM_BALL);
 const eventBallHitFloor = useEventBus<BallHitWordEventPayload>(BALL_HIT_WORD);
 
@@ -40,6 +42,12 @@ const applicationStore = useApplicationStore();
 const ballsStore = useBallsStore();
 
 const isTaskDescriptionExpanded = ref(false);
+whenever(isTaskDescriptionExpanded, () => {
+    gtag("event", "task_description_expanded", {
+        event_category: "task_description",
+        event_label: "task_description_expanded",
+    });
+});
 
 whenever(logicAnd(space, notUsingInput), () => {
     eventAddRandomBall.emit({});
@@ -93,6 +101,7 @@ eventBallAudioReceived.on((data) => {
                                             class=":uno: underline-text-gray-600 cursor-pointer underline underline-dashed transition hover:(text-light-50)"
                                             target="_blank"
                                             to="https://github.com/denishsharma"
+                                            @click="gtag('event', 'author_click', { event_category: 'author', event_label: 'author_click' })"
                                         >
                                             Denish Sharma
                                         </NuxtLink>
@@ -107,6 +116,7 @@ eventBallAudioReceived.on((data) => {
                                         class=":uno: size-9 flex cursor-pointer items-center justify-center gap-x-2 border border-transparent rounded-lg bg-transparent text-sm transition active:(border-dark-300 bg-dark-400) hover:(bg-dark-200)"
                                         target="_blank"
                                         to="https://www.linkedin.com/in/denishsharma/"
+                                        @click="gtag('event', 'linkedin_click', { event_category: 'social', event_label: 'linkedin_click' })"
                                     >
                                         <Icon class=":uno: size-4.5" name="i-mynaui:brand-linkedin" />
                                     </NuxtLink>
@@ -116,6 +126,7 @@ eventBallAudioReceived.on((data) => {
                                         class=":uno: size-9 flex cursor-pointer items-center justify-center gap-x-2 border border-transparent rounded-lg bg-transparent text-sm transition active:(border-dark-300 bg-dark-400) hover:(bg-dark-200)"
                                         target="_blank"
                                         to="https://github.com/denishsharma/smallest-ai-task-bouncing-ball-audio-nuxt"
+                                        @click="gtag('event', 'github_click', { event_category: 'social', event_label: 'github_click' })"
                                     >
                                         <Icon class=":uno: size-4.5" name="i-mynaui:brand-github" />
                                     </NuxtLink>
@@ -172,6 +183,7 @@ eventBallAudioReceived.on((data) => {
                                     class=":uno: flex cursor-pointer items-center gap-x-2 bg-transparent text-sm text-cyan-600 underline underline-dashed transition hover:(text-cyan-700)"
                                     target="_blank"
                                     to="https://github.com/denishsharma/smallest-ai-task-bouncing-ball-audio-nuxt"
+                                    @click="gtag('event', 'frontend_repo_click', { event_category: 'repository', event_label: 'frontend_repo_click' })"
                                 >
                                     Frontend Repository
                                 </NuxtLink>
@@ -183,6 +195,7 @@ eventBallAudioReceived.on((data) => {
                                     class=":uno: flex cursor-pointer items-center gap-x-2 bg-transparent text-sm text-cyan-600 underline underline-dashed transition hover:(text-cyan-700)"
                                     target="_blank"
                                     to="https://github.com/denishsharma/smallest-ai-task-bouncing-ball-audio-adonis"
+                                    @click="gtag('event', 'backend_repo_click', { event_category: 'repository', event_label: 'backend_repo_click' })"
                                 >
                                     Backend Repository
                                 </NuxtLink>

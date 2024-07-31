@@ -44,6 +44,18 @@ export default defineNuxtConfig({
         "nuxt-api-party",
         "@nuxtjs/device",
     ],
+    $production: {
+        scripts: {
+            registry: {
+                googleAnalytics: {
+                    id: "G-K4NGLMN4ZH",
+                },
+                clarity: {
+                    id: "nfvqailixp",
+                },
+            },
+        },
+    },
     device: {
         refreshOnResize: true,
     },

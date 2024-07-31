@@ -9,6 +9,8 @@ import { ARENA_HEIGHT, ARENA_WIDTH, BALL_LABEL_REGEX, BALL_PROPERTIES, BALL_RADI
 
 const { Bodies, Body, Composite, Engine, Events, Render, Runner } = matterjs;
 
+const { gtag } = useScriptGoogleAnalytics();
+
 const applicationStore = useApplicationStore();
 const { words, hasAudioFetchedForAllWords, isSocketConnected } = storeToRefs(applicationStore);
 
@@ -27,6 +29,17 @@ const eventHoverOnWord = useEventBus<HoverOnWordEventPayload>(HOVER_ON_WORD);
 const eventRemoveBallFromScene = useEventBus<RemoveBallFromSceneEventPayload>(REMOVE_BALL_FROM_SCENE);
 
 const { isSupported, memory } = useMemory();
+watch([isSupported, memory], ([_isSupported, _memory]) => {
+    if (_isSupported && _memory) {
+        if (_memory.usedJSHeapSize > _memory.totalJSHeapSize * 0.9) {
+            gtag("event", "memory_usage", {
+                event_category: "arena",
+                event_label: "High Memory Usage",
+                value: _memory.usedJSHeapSize,
+            });
+        }
+    }
+});
 
 const arena = ref<HTMLCanvasElement | undefined>(undefined);
 
@@ -141,6 +154,11 @@ eventAddRandomBall.on((data) => {
     };
 
     Events.on(engine, "afterUpdate", checkBallAtRest);
+
+    gtag("event", "add_random_ball", {
+        event_category: "arena",
+        event_label: "Add Random Ball",
+    });
 });
 
 eventBallHitWord.on((payload) => {
